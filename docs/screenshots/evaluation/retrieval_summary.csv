@@ -1,0 +1,4 @@
+method,recall_at_5,hit_at_5,ndcg_at_5,mrr_at_10,questions,query_ms
+R1 Binary BoW,0.457,0.550,0.416,0.461,40,5.751
+R2 TF-IDF,0.525,0.625,0.473,0.528,40,2.761
+R3 Word2Vec,0.312,0.400,0.279,0.330,40,3.915
