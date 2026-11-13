@@ -1,148 +1,89 @@
-# Thai Legal RAG
+<div align="center">
+  <h1>Thai Legal RAG</h1>
+  <p>ค้นมาตรากฎหมายไทย เปรียบเทียบวิธีค้น 4 แบบ และดูว่าหลักฐานที่ค้นได้ส่งผลต่อคำตอบอย่างไร</p>
+  <p>
+    <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue"></a>
+    <a href="pyproject.toml"><img alt="Python 3.10 ขึ้นไป" src="https://img.shields.io/badge/Python-3.10%2B-3776AB"></a>
+  </p>
+  <p>
+    <a href="docs/README.md">คู่มือ</a> ·
+    <a href="docs/getting-started.md#เปิดหน้าเว็บบนเครื่อง">เปิดเดโมบนเครื่อง</a> ·
+    <a href="notebooks/Thai_Legal_RAG_Clean.ipynb">Notebook</a> ·
+    <a href="https://github.com/01aptx01/ThaiLegal-Embedding-NLPLab/issues/new">แจ้งปัญหาหรือเสนอฟีเจอร์</a>
+  </p>
+</div>
 
-ชุดทดลองเปรียบเทียบการค้นคืนตัวบทกฎหมายไทย 4 วิธี และประเมินการสร้างคำตอบพร้อม citation จากหลักฐานที่ค้นคืนได้ โค้ด Python แบบ package แยกขั้นตอนทำงานออกจาก [notebook ต้นฉบับ](notebooks/Thai_Legal_RAG_Clean.ipynb) เพื่อให้รันซ้ำ ตรวจสอบผล และนำเข้าคะแนน human review ได้สะดวก
+## สารบัญ
 
-> ผลลัพธ์เป็นงานทดลองทางวิชาการ ไม่ใช่คำแนะนำทางกฎหมาย
+- [เกี่ยวกับโปรเจกต์](#เกี่ยวกับโปรเจกต์)
+- [สิ่งที่ทำได้](#สิ่งที่ทำได้)
+- [เริ่มใช้งาน](#เริ่มใช้งาน)
+- [วิธีใช้งาน](#วิธีใช้งาน)
+- [การตั้งค่า](#การตั้งค่า)
+- [ร่วมพัฒนา](#ร่วมพัฒนา)
+- [สัญญาอนุญาตและแหล่งข้อมูล](#สัญญาอนุญาตและแหล่งข้อมูล)
 
-## เริ่มต้นใช้งาน
+## เกี่ยวกับโปรเจกต์
 
-ต้องใช้ Python 3.10 ขึ้นไป แนะนำให้สร้าง virtual environment แยกไว้ก่อน โมเดลและชุดข้อมูลจะดาวน์โหลดจาก Hugging Face ในการรันครั้งแรก และอาจต้องใช้พื้นที่ดิสก์กับ RAM/GPU มาก
+โปรเจกต์นี้ทดลองว่าเมื่อใช้คำถามและคลังกฎหมายชุดเดียวกัน วิธีค้นแบบไหนพามาตราที่เกี่ยวข้องขึ้นมาอยู่ในอันดับต้น ๆ เมื่อได้ผลค้นแล้ว ระบบจะส่งตัวบทให้ Typhoon สร้างคำตอบภาษาไทย โปรแกรมตรวจว่ารหัสที่คำตอบอ้างอยู่ในชุดตัวบทที่ส่งให้โมเดลหรือไม่ จากนั้นคนตรวจอ่านว่าตัวบทรองรับข้อความในคำตอบจริงหรือไม่
+
+คลังที่ใช้คือชุด CCL จาก NitiBench หน่วยที่ค้นคือ **หนึ่งมาตราต่อหนึ่งรายการ** คำตอบบนหน้าเว็บใช้สำหรับทดลองกับคลังนี้ เมื่อนำข้อมูลไปอ้างอิง ให้ตรวจตัวบทฉบับปัจจุบันกับแหล่งทางการด้วย
+
+## สิ่งที่ทำได้
+
+- **Playground** พิมพ์คำถาม เลือกวิธีค้น เปิดอ่านตัวบท และกดรหัสอ้างอิงในคำตอบเพื่อกลับไปดูหลักฐาน
+- **Compare** ส่งคำถามเดียวกันให้ Binary BoW, TF-IDF, Word2Vec หรือ BGE-M3 แล้วดูอันดับมาตราและเวลาที่ใช้แต่ละวิธี
+- **Evaluate** เปิดตารางคะแนนจากรอบทดลองที่บันทึกไว้ ส่วน **History** เก็บรายการที่เพิ่งรันระหว่างเปิดหน้านั้น
+- **คำสั่งทดลอง** รันบนชุดคำถามที่มีคำตอบและมาตราอ้างอิง บันทึกผลรายข้อ และส่งออกไฟล์ให้คนตรวจคำตอบโดยซ่อนชื่อวิธีค้น
+
+## เริ่มใช้งาน
+
+ใช้ Python 3.10 ขึ้นไป สำหรับหน้าเว็บให้เตรียม Node.js ด้วย ตัวอย่างนี้ใช้ Node.js 22 และรันบน CPU เพื่อทดลองค้นมาตราก่อน
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate        # Windows PowerShell: .venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e .
-```
-
-รัน pilot แบบ retrieval-only ซึ่งยังสร้าง embeddings ให้ครบทั้งคลังมาตรา
-
-```bash
-thai-legal-rag run --mode pilot --retrieval-only
-```
-
-รัน pilot พร้อม generation ค่าเริ่มต้นสูงสุด 40 คำถามสำหรับ retrieval และ 4 คำถามสำหรับ generation
-
-```bash
-thai-legal-rag run --mode pilot
-```
-
-รัน test benchmark และสุ่มคำถามสำหรับ generation โดยกระจายตามกฎหมายสูงสุด 200 ข้อ
-
-```bash
-thai-legal-rag run --mode test
-```
-
-ตัวอย่างการระบุอุปกรณ์และโฟลเดอร์ผลลัพธ์
-
-```bash
-thai-legal-rag run --mode pilot --device cpu --output-dir ./rag_results
-```
-
-`--device auto` ใช้ CUDA เมื่อพร้อม มิฉะนั้นใช้ CPU; กำหนดเป็น `cpu` หรือ `cuda` ได้เอง `--bge-batch-size` ใช้ลด batch เมื่อหน่วยความจำไม่พอ ค่าปริยายคือ 8
-
-## ขั้นตอนและโครงสร้างโค้ด
-
-ลำดับด้านล่างอ้างอิงเลขเซลล์แบบเริ่มนับจาก 1 ใน notebook ต้นฉบับ:
-
-| Notebook | งาน | โมดูล Python |
-| --- | --- | --- |
-| 3–4 | ติดตั้ง dependencies, กำหนดค่าเริ่มต้น และเริ่ม manifest | `pyproject.toml`, `config.py`, `cli.py`, `pipeline.py` |
-| 6 | โหลด datasets และบันทึก revision ที่ใช้ | `data.py`, `pipeline.py` |
-| 8–9 | สร้างรหัส statute, จับคู่ gold, ตรวจ duplicate/ambiguous และคัดคำถาม | `data.py` |
-| 11 | เลือกชุดคำถาม generation แบบแบ่งชั้นตามกฎหมาย | `data.py`, `pipeline.py` |
-| 13 | ตรวจความยาว corpus ตาม tokenizer ของ BGE-M3 | `retrieval.py` |
-| 15–16 | สร้าง ranking ด้วย Binary BoW, TF-IDF, Word2Vec และ BGE-M3 | `retrieval.py` |
-| 18–19 | คำนวณ retrieval metrics และสรุปผล | `retrieval.py` |
-| 21 | สร้างคำตอบจากหลักฐานที่ใส่ใน prompt พร้อมตรวจ citation | `generation.py` |
-| 23 | สร้างสรุป generation และ review template | `generation.py` |
-| 25 | ตรวจและสรุปคะแนน human review | `review.py` |
-| 27 | รวมผลเป็น ZIP | `pipeline.py` |
-
-คำสั่งหลักติดตั้งเป็น `thai-legal-rag` และเรียกผ่าน `thai_legal_rag.cli:main` ส่วน notebook เก็บ workflow ต้นฉบับไว้เพื่อเทียบกับการทำงานแบบ package
-
-## คำสั่ง
-
-```text
-thai-legal-rag run [--mode {pilot,test}] [--retrieval-only]
-                   [--output-dir PATH] [--device {auto,cpu,cuda}]
-                   [--seed INT] [--pilot-questions INT]
-                   [--pilot-generation-questions INT]
-                   [--test-generation-questions INT]
-                   [--corpus-revision REF] [--pilot-revision REF]
-                   [--test-revision REF] [--bge-revision REF]
-                   [--generator-revision REF] [--bge-batch-size INT]
-
-thai-legal-rag review RUN_DIR [--scores PATH]
-```
-
-ค่า revision เป็น commit hash หรือ reference ที่ Hugging Face เข้าใจได้ หากไม่ระบุ โปรแกรมจะ resolve revision ปัจจุบันและบันทึกค่าที่ใช้ใน manifest ของ run การระบุ revision ทั้งห้าช่วยให้เรียกชุดข้อมูล corpus, pilot, test และโมเดล BGE-M3 กับ generator รุ่นเดิมได้ เมื่อต้องเทียบรอบทดลอง ให้ใช้ `--seed`, revisions, รุ่น Python/dependencies และ device เดิม กำหนด `PYTHONHASHSEED` ก่อนเปิด Python เพื่อควบคุมการสุ่ม hash ระหว่าง process
-
-## ผลลัพธ์
-
-แต่ละ run สร้างโฟลเดอร์ `rag_results/<mode>_.../` เมื่อรันสำเร็จจะได้ ZIP อยู่ข้างกัน
-
-- `manifest.json`, `run_config.json` — revisions, รุ่น dependencies, การตั้งค่า และ ID ของคำถามที่ใช้
-- `statute_ids.csv`, `duplicate_keys.jsonl`, `question_audit.csv`, `mapping_audit.csv` — ตารางรหัสกฎหมายและ audit การเตรียมข้อมูล
-- `corpus_lengths.csv` — ความยาว corpus เมื่อ tokenize ด้วย BGE-M3 และจำนวนที่เกินขีดจำกัด
-- `retrieval_rows.jsonl`, `retrieval_summary.csv`, `retrieval_on_generation_subset.csv` — rankings, metrics และเวลา
-- `generation_rows.jsonl`, `generation_summary.csv`, `evidence_stages.csv` — คำตอบ, citation metrics และจุดที่หลักฐานขาดหาย
-- `review_template.csv` — แบบฟอร์มให้ผู้ประเมินกรอกคะแนน
-- `review_scored.csv`, `human_summary.csv`, `human_evidence_stages.csv` — คะแนนและสรุปหลังนำเข้าการประเมิน
-
-หากเปิด generation ให้คัดลอก `review_template.csv` เป็น `review_scored.csv` ในโฟลเดอร์ run แล้วกรอกคอลัมน์ `coverage` (0–2), `contradiction` (0–1) และ `citation_support` (0–1) คง `review_id` เดิมไว้ จากนั้นนำเข้าคะแนนด้วยคำสั่งนี้
-
-```bash
-thai-legal-rag review rag_results/<ชื่อโฟลเดอร์-run>
-```
-
-ถ้าเก็บไฟล์คะแนนไว้นอกโฟลเดอร์ run ให้ระบุ path
-
-```bash
-thai-legal-rag review rag_results/<ชื่อโฟลเดอร์-run> --scores /path/to/review_scored.csv
-```
-
-Review จะรับเฉพาะ `review_id` จาก run นั้น และสรุปเฉพาะคำถามที่มีคะแนนครบทั้ง 4 วิธี โปรแกรมเขียน `human_summary.csv` กับ `human_evidence_stages.csv` ใหม่; เมื่อมีคำถามที่ครบอย่างน้อยหนึ่งข้อ จะ refresh ZIP ของ run ด้วย
-
-## ขอบเขตและข้อควรตีความ
-
-- ค่าเริ่มต้น pilot ใช้ได้สูงสุด 40 คำถาม; generation ใช้ 4 คำถามใน pilot และสูงสุด 200 ใน test Retrieval ใช้คำถามที่จับคู่ gold ได้ครบ ส่วน generation เลือกจากคำถามเหล่านั้นที่มี reference answer
-- คำถามที่ว่าง ไม่มี gold, จับคู่ตัวบทไม่ได้หรือกำกวม และ pilot ที่ซ้ำกับ test จะไม่เข้า evaluation จำนวน eligible จริงอาจเปลี่ยนตาม revision ของ Hugging Face; ตรวจได้ใน `question_audit.csv` และ `mapping_audit.csv`
-- Retrieval ใช้ exact cosine ranking กับ Binary BoW, TF-IDF, Word2Vec ที่ฝึกจาก corpus ของ run และ BGE-M3; R1–R3 ใช้ Thai word tokenization เดียวกัน ผลจึงขึ้นกับ corpus, preprocessing, model revision และ seed
-- ใช้หนึ่งมาตราเป็นหนึ่งหน่วยค้นคืน ทั้งสี่วิธีใช้ชุดมาตราเดียวกัน วัด Recall@1/5/10, Hit@5, nDCG@5/10 และ MRR@10 แบบ macro average รายคำถาม
-- BGE-M3 ถูกจำกัดความยาว input ตามการตั้งค่า ส่วน generation จำกัด context ด้วย token budget และตัด statute ออกเป็นทั้งส่วนเมื่อใส่ prompt ไม่พอดี ตัวบทที่ยาวกว่า BGE limit อาจถูกตัดโดย tokenizer ของ encoder
-- Citation metrics ตรวจรูปแบบรหัสและการอ้างรหัสที่อยู่ใน prompt แต่ไม่ยืนยันความถูกต้องทางกฎหมายหรือว่าข้อความรองรับข้อสรุปจริง ควรใช้ human review ประกอบ และอย่าใช้ผลลัพธ์แทนการตรวจโดยผู้เชี่ยวชาญ
-- งานเต็มอาจใช้เวลานานและกินหน่วยความจำ โดยเฉพาะ BGE-M3 และ generator การรันบน CPU ทำได้แต่ช้ากว่ามาก; ถ้า memory ไม่พอให้ลด `--bge-batch-size` และถ้าพื้นที่ดาวน์โหลดโมเดลไม่พอให้ตั้งตัวแปรสภาพแวดล้อม `HF_HOME` ไปยังดิสก์ที่มีพื้นที่
-
-## ตรวจสอบชุดทดสอบ
-
-```bash
-python -m unittest discover -s tests -v
-```
-
-## Inference workspace
-
-หน้าเว็บมี Playground สำหรับถามใหม่, Compare สำหรับส่งคำถามเดียวไปหลาย retrievers, Evaluate สำหรับดู `retrieval_summary.csv` จาก benchmark ที่รันไว้ และ History สำหรับผลใน session ของหน้าเว็บ ติดตั้งหน้าเว็บด้วย Node.js 22.12 ขึ้นไปและใช้ FastAPI เสิร์ฟ frontend กับ API จาก origin เดียวกัน
-
-```bash
-python -m pip install -e '.[web]'
+source .venv/bin/activate
+python -m pip install -e ".[web]"
 cd frontend
 npm ci
 npm run build
 cd ..
-thai-legal-rag-web build-index --no-dense
-thai-legal-rag-web serve --retrieval-only
+thai-legal-rag-web build-index --no-dense --device cpu
+thai-legal-rag-web serve --retrieval-only --device cpu
 ```
 
-เปิด [http://127.0.0.1:8000](http://127.0.0.1:8000) สำหรับการค้นด้วย Binary BoW, TF-IDF และ Word2Vec เซิร์ฟเวอร์จะโหลดดัชนีที่สร้างไว้ครั้งเดียวและนำมาใช้กับทุกคำถาม ใช้เฉพาะโฟลเดอร์ดัชนีที่สร้างเองหรือมาจากแหล่งที่ไว้ใจได้ เพราะดัชนีมีโมเดลที่บันทึกด้วย Joblib
+เปิด [http://127.0.0.1:8000](http://127.0.0.1:8000) ดัชนีที่สร้างแล้วใช้ซ้ำได้ ครั้งถัดไปเริ่มที่คำสั่ง `serve` ได้เลย สำหรับ PowerShell หรือการเปิด BGE-M3 และ Typhoon ดู [คู่มือเริ่มใช้งาน](docs/getting-started.md)
 
-หากต้องการทั้งสี่ retrievers และคำตอบจาก Typhoon ให้สร้างดัชนี BGE-M3 แยกแล้วรันบนเครื่องที่มี GPU และหน่วยความจำเพียงพอ
+## วิธีใช้งาน
+
+| อยากทำอะไร | อ่านที่ไหน |
+| --- | --- |
+| ดูว่าข้อมูลมาจากไหนและโปรแกรมจับคู่เลขมาตราอย่างไร | [ข้อมูลและการจับคู่มาตรา](docs/data.md) |
+| เข้าใจวิธีค้นทั้งสี่แบบและเหตุผลที่อันดับต่างกัน | [การค้นมาตรา](docs/retrieval.md) |
+| ตามว่าตัวบทไหนถูกส่งให้โมเดลและคำตอบอ้างอะไร | [การสร้างคำตอบ](docs/generation.md) |
+| รัน pilot หรือ test แล้วอ่านคะแนนและนำเข้าคะแนนคนตรวจ | [การทดลองและการประเมินผล](docs/evaluation.md) |
+| เปิดเว็บ เชื่อม API หรือตามโค้ดจากหน้าจอไปถึงโมเดล | [หน้าเว็บและ API](docs/inference-web.md) |
+
+ดูแผนที่ไฟล์และตารางเทียบเซลล์ของ Notebook ได้ที่ [สารบัญเอกสาร](docs/README.md)
+
+## การตั้งค่า
+
+| ค่าที่ใช้บ่อย | อยู่ที่ไหน |
+| --- | --- |
+| เลือก CPU หรือ GPU | `--device cpu` หรือ `--device cuda` |
+| จำนวนคำถามและ seed ของการทดลอง | `thai-legal-rag run --help` |
+| โฟลเดอร์ดัชนีและผลทดลองที่จะแสดงบนหน้าเว็บ | `thai-legal-rag-web serve --help` |
+| รุ่นข้อมูลและโมเดลที่ใช้จริง | `manifest.json` ในโฟลเดอร์ผลรันหรือโฟลเดอร์ดัชนี |
+
+## ร่วมพัฒนา
+
+เมื่อต้องแก้วิธีค้นหรือเกณฑ์วัดผล ให้อธิบายใน Pull Request ว่ากระทบไฟล์ผลรันและการเทียบกับผลเดิมอย่างไร ถ้าแจ้งปัญหาการรัน ให้แนบคำสั่ง ข้อความผิดพลาด และรุ่นข้อมูลหรือโมเดลจาก `manifest.json` หากมี
 
 ```bash
-thai-legal-rag-web build-index --output inference_index/full --device cuda
-thai-legal-rag-web serve --index inference_index/full --device cuda
+python -m unittest discover -s tests -v
+npm --prefix frontend run build
 ```
 
-ใช้ `--evaluation-run PATH` กับคำสั่ง `serve` เพื่อแสดงผล benchmark จากโฟลเดอร์รันเดิม ใช้ `--max-new-tokens` เพื่อลดงบตอบสำหรับ demo และ `--corpus-revision`, `--bge-revision`, `--generator-revision` เพื่อกำหนด revision ตามคำสั่งที่รองรับ
+## สัญญาอนุญาตและแหล่งข้อมูล
 
-หน้าเว็บรับหลักฐานและคำตอบเป็น NDJSON stream พร้อมเวลา retrieval, เวลาเริ่มเห็นคำตอบ และเวลาสร้างคำตอบ คำสั่ง `serve` เปิดบน loopback โดยค่าเริ่มต้นและประมวลผล inference ทีละ request เพื่อจำกัดการใช้หน่วยความจำ ค่าใช้จ่ายและ latency ของ production ขึ้นกับฮาร์ดแวร์ งบ token และปริมาณผู้ใช้
+โค้ดใช้ [MIT License](LICENSE) ส่วนชุดข้อมูลและโมเดลอยู่ภายใต้เงื่อนไขของผู้เผยแพร่แต่ละราย ดู [ชุดข้อมูลที่ใช้](docs/data.md#ชุดข้อมูลที่ใช้) และ [โมเดลที่ใช้](docs/retrieval.md#วิธีค้นทั้งสี่แบบ)
