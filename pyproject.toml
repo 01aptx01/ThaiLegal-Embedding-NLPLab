@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thai-legal-rag"
+version = "0.1.0"
+description = "Reproducible Thai legal retrieval and generation experiment"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [{name = "NLP-Project contributors"}]
+dependencies = [
+  "numpy>=1.26,<3",
+  "pandas>=2.1,<4",
+  "scipy>=1.11,<2",
+  "scikit-learn>=1.4,<2",
+  "torch>=2.6",
+  "datasets>=3.2,<5",
+  "gensim>=4.4,<5",
+  "pythainlp>=5,<6",
+  "huggingface_hub>=0.30,<1",
+  "transformers>=4.51,<5",
+  "sentence-transformers>=4.1,<6",
+  "tqdm>=4.66,<5",
+]
+
+[project.scripts]
+thai-legal-rag = "thai_legal_rag.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
