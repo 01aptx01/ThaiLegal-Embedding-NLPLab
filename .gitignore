@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.dist/
+build/
+dist/
+.venv/
+venv/
+
+# Test and tooling caches
+.coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local experiment outputs and model downloads
+rag_results/
+.huggingface/
+.cache/
