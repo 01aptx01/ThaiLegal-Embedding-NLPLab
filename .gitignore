@@ -19,3 +19,8 @@ venv/
 rag_results/
 .huggingface/
 .cache/
+
+# Inference index and frontend
+inference_index/
+frontend/node_modules/
+frontend/dist/

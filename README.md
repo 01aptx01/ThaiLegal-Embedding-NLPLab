@@ -119,3 +119,30 @@ Review จะรับเฉพาะ `review_id` จาก run นั้น แ
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+## Inference workspace
+
+หน้าเว็บมี Playground สำหรับถามใหม่, Compare สำหรับส่งคำถามเดียวไปหลาย retrievers, Evaluate สำหรับดู `retrieval_summary.csv` จาก benchmark ที่รันไว้ และ History สำหรับผลใน session ของหน้าเว็บ ติดตั้งหน้าเว็บด้วย Node.js 22.12 ขึ้นไปและใช้ FastAPI เสิร์ฟ frontend กับ API จาก origin เดียวกัน
+
+```bash
+python -m pip install -e '.[web]'
+cd frontend
+npm ci
+npm run build
+cd ..
+thai-legal-rag-web build-index --no-dense
+thai-legal-rag-web serve --retrieval-only
+```
+
+เปิด [http://127.0.0.1:8000](http://127.0.0.1:8000) สำหรับการค้นด้วย Binary BoW, TF-IDF และ Word2Vec เซิร์ฟเวอร์จะโหลดดัชนีที่สร้างไว้ครั้งเดียวและนำมาใช้กับทุกคำถาม ใช้เฉพาะโฟลเดอร์ดัชนีที่สร้างเองหรือมาจากแหล่งที่ไว้ใจได้ เพราะดัชนีมีโมเดลที่บันทึกด้วย Joblib
+
+หากต้องการทั้งสี่ retrievers และคำตอบจาก Typhoon ให้สร้างดัชนี BGE-M3 แยกแล้วรันบนเครื่องที่มี GPU และหน่วยความจำเพียงพอ
+
+```bash
+thai-legal-rag-web build-index --output inference_index/full --device cuda
+thai-legal-rag-web serve --index inference_index/full --device cuda
+```
+
+ใช้ `--evaluation-run PATH` กับคำสั่ง `serve` เพื่อแสดงผล benchmark จากโฟลเดอร์รันเดิม ใช้ `--max-new-tokens` เพื่อลดงบตอบสำหรับ demo และ `--corpus-revision`, `--bge-revision`, `--generator-revision` เพื่อกำหนด revision ตามคำสั่งที่รองรับ
+
+หน้าเว็บรับหลักฐานและคำตอบเป็น NDJSON stream พร้อมเวลา retrieval, เวลาเริ่มเห็นคำตอบ และเวลาสร้างคำตอบ คำสั่ง `serve` เปิดบน loopback โดยค่าเริ่มต้นและประมวลผล inference ทีละ request เพื่อจำกัดการใช้หน่วยความจำ ค่าใช้จ่ายและ latency ของ production ขึ้นกับฮาร์ดแวร์ งบ token และปริมาณผู้ใช้
